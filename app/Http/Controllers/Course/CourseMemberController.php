@@ -37,7 +37,7 @@ class CourseMemberController extends Controller
 
         $course_invitation->delete();
 
-        return redirect()->back()->with('success', 'member created');
+        return redirect()->route('showStudentCourse', ['course_id' => $course_id]);
     }
 
     public function store(Request $request, string $organization_id, string $course_id)

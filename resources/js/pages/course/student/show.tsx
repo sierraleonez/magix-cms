@@ -17,9 +17,11 @@ interface iShowStudentCourseProps {
 
 export default function ShowStudentCourse({ course, course_subscription, progress }: iShowStudentCourseProps) {
     const expiryDate = useMemo(() => {
-        const date = new Date(course_subscription.expired_at)
-        return date.toLocaleDateString()
-    }, [course_subscription.expired_at])
+        if (course.is_paid) {
+            const date = new Date(course_subscription.expired_at)
+            return date.toLocaleDateString()
+        }
+    }, [course_subscription?.expired_at])
 
     function showCourseContent() {
         router.visit(route('showStudentCourseContent', {
@@ -43,7 +45,13 @@ export default function ShowStudentCourse({ course, course_subscription, progres
                         <CardTitle>Subscription Detail</CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <CardDescription>Expired at {expiryDate}</CardDescription>
+                        {
+                            course.is_paid ? (
+                                <CardDescription>Expired at {expiryDate}</CardDescription>
+                            ) : (
+                                <CardDescription>Free Course</CardDescription>
+                            )
+                        }
                     </CardContent>
                 </Card>
                 <Card>
