@@ -1,0 +1,57 @@
+# docker-compose.yml
+
+version: '3.8'
+
+services:
+  # Application Service (PHP-FPM)
+  app:
+    image: almerwalker/magix-app:latest
+    container_name: laravel_app
+    restart: unless-stopped
+    working_dir: /var/www
+    volumes:
+      - ./:/var/www
+    networks:
+      - laravel
+
+  # Web Server Service (Nginx)
+  webserver:
+    image: nginx:alpine
+    container_name: laravel_webserver
+    restart: unless-stopped
+    ports:
+      - "8080:80" # Access the app via http://localhost:8080
+    volumes:
+      - ./:/var/www
+      - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf
+    networks:
+      - laravel
+    depends_on:
+      - app
+
+  # Database Service (MySQL)
+  db:
+    image: mysql:8.0
+    container_name: laravel_db
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: ${DB_DATABASE}
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+      MYSQL_USER: ${DB_USERNAME}
+    volumes:
+      - dbdata:/var/lib/mysql
+    ports:
+      - "33061:3306" # Connect from host using port 33061
+    networks:
+      - laravel
+
+# Define the network
+networks:
+  laravel:
+    driver: bridge
+
+# Define the named volume for persistent DB data
+volumes:
+  dbdata:
+    driver: local
