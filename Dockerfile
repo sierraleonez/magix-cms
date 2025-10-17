@@ -1,18 +1,18 @@
 # Dockerfile
 
 # STAGE 1: Build Frontend Assets
-FROM node:18-alpine AS builder
+FROM cimg/php:8.3.26-node AS builder
 
 WORKDIR /app
-COPY package*.json ./
-RUN npm install
 COPY . .
+RUN sudo chmod -R 777 /app
+RUN composer install
+RUN npm install
 RUN npm run build
 
-# Use the official PHP 8.2 FPM image on Alpine Linux for a smaller footprint
+# # # Use the official PHP 8.2 FPM image on Alpine Linux for a smaller footprint
 FROM php:8.2-fpm-alpine
-
-# Set working directory
+# # # Set working directory
 WORKDIR /var/www
 
 # Install system dependencies needed for Laravel
@@ -37,9 +37,15 @@ COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 # Copy existing application directory contents
 COPY . .
 
+COPY --from=builder /app/public/build /var/www/public/build
+
+COPY --from=builder /app/vendor /var/www/vendor
+
 # Copy environment file for Docker, if it exists
 # We will manage .env variables properly with docker-compose
 COPY .env.example .env
+
+RUN php artisan key:generate
 
 # Set correct permissions for storage and bootstrap/cache directories
 # The user 'www-data' is the default user for php-fpm

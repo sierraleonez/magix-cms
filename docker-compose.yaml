@@ -5,12 +5,19 @@ version: '3.8'
 services:
   # Application Service (PHP-FPM)
   app:
-    image: almerwalker/magix-app:latest
+    image: almerwalker/magix-app-test:latest
     container_name: laravel_app
     restart: unless-stopped
     working_dir: /var/www
+    environment:
+      DB_CONNECTION: ${DB_CONNECTION}
+      DB_DATABASE: ${DB_DATABASE}
+      DB_USERNAME: ${DB_USERNAME}
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_PORT: 3306
+      DB_HOST: ${DB_HOST}
     volumes:
-      - ./:/var/www
+      - app-code:/var/www
     networks:
       - laravel
 
@@ -22,7 +29,7 @@ services:
     ports:
       - "8080:80" # Access the app via http://localhost:8080
     volumes:
-      - ./:/var/www
+      - app-code:/var/www:ro
       - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf
     networks:
       - laravel
@@ -54,4 +61,6 @@ networks:
 # Define the named volume for persistent DB data
 volumes:
   dbdata:
+    driver: local
+  app-code:
     driver: local
